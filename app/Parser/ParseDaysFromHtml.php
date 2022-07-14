@@ -13,32 +13,32 @@ trait ParseDaysFromHtml
      */
     public function parseCalendar(string $monthsHtml): Collection
     {
-        $months = $this->getCalendarDayComponents($monthsHtml);
-        $collection = collect();
+        $monthsComponents = $this->getCalendarDayComponents($monthsHtml);
+        $monthsCollection = collect();
 
-        foreach ($months as $month) {
-            $arr = [];
+        foreach ($monthsComponents as $monthComponent) {
+            $monthArray = [];
 
-            $arr['abbr_name'] = $this->getMonthName($month);;
-            $arr['days'] = $this->getDays($month);
+            $monthArray['month_name'] = $this->getMonthName($monthComponent);;
+            $monthArray['days'] = $this->getDays($monthComponent);
 
-            $collection->push($arr);
+            $monthsCollection->push($monthArray);
         }
 
-        return $collection;
+        return $monthsCollection;
     }
 
     /**
      * @param string $months
      * @return array
      */
-    private function getCalendarDayComponents(string $months): array
+    private function getCalendarDayComponents(string $monthsHtml): array
     {
         preg_match_all('/(?<=<div).*?(?=<\/table>)/',
-            $months,
-            $all_components);
+            $monthsHtml,
+            $monthsComponents);
 
-        return $all_components[0];
+        return $monthsComponents[0];
     }
 
     /**
@@ -60,21 +60,21 @@ trait ParseDaysFromHtml
     private function getDays(string $component): array
     {
         preg_match_all('/(?<=<td)[\w\W].*?(?=<\/div><\/td>)/', $component, $parsedDays);
-        $result = [];
+        $daysArray = [];
 
         foreach ($parsedDays[0] as $day) {
             preg_match('/(?<=calendar-day-)(?<result>[\d\/]+)(?=")/', $day, $parsedDate);
-            preg_match('/(?<=aria-disabled=")(?<result>true|false)(?=" aria-label)/', $day, $available);
+            preg_match('/(?<=aria-disabled=")(?<result>true|false)(?=" aria-label)/', $day, $availability);
             preg_match('/available for check out/', $day, $availableForCheckin);
             $changedDateFormat = Carbon::createFromFormat('m/d/Y', $parsedDate['result'])->format('Y-m-d');
 
-            $result[] = [
+            $daysArray[] = [
                 'date' => $changedDateFormat,
-                'available' => !filter_var( $available['result'], FILTER_VALIDATE_BOOLEAN),
+                'available' => !filter_var( $availability['result'], FILTER_VALIDATE_BOOLEAN),
                 'available_for_checkin' => (bool) $availableForCheckin
             ];
         }
 
-        return $result;
+        return $daysArray;
     }
 }
