@@ -1,11 +1,13 @@
 <?php
 
-// An example of using php-webdriver.
-// Do not forget to run composer install before. You must also have Selenium server started and listening on port 4444.
+// You must also have Selenium server started and listening on port :4444/wd/hub.
 
 namespace App\Scraper;
 
 use Facebook\WebDriver\Chrome\ChromeOptions;
+use Facebook\WebDriver\Exception\NoSuchElementException;
+use Facebook\WebDriver\Exception\TimeoutException;
+use Facebook\WebDriver\Exception\UnsupportedOperationException;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverBy;
@@ -32,8 +34,16 @@ class WebDriver
             )
         );
     }
-    
-    protected function waitForElement(string $xPath, $timeInSeconds = 10, $intervalInMillisecond = 200): void
+
+    /**
+     * @param string $xPath
+     * @param int $timeInSeconds
+     * @param int $intervalInMillisecond
+     * @return void
+     * @throws NoSuchElementException
+     * @throws TimeoutException
+     */
+    protected function waitForElement(string $xPath, int $timeInSeconds = 10, int $intervalInMillisecond = 200): void
     {
         $element = WebDriverBy::xpath($xPath);
 
@@ -42,6 +52,10 @@ class WebDriver
                 'Element not found: ' . $xPath);
     }
 
+    /**
+     * @param string $xPath
+     * @return string
+     */
     protected function getTextOfElement(string $xPath): string
     {
         return $this->browser->findElement(WebDriverBy::xpath($xPath))->getText();
@@ -52,12 +66,19 @@ class WebDriver
         $this->browser->findElement(WebDriverBy::xpath($xPath))->click();
     }
 
-    protected function entireHtmlOfElement(string $xPath)
+    /**
+     * @throws UnsupportedOperationException
+     */
+    protected function entireHtmlOfElement(string $xPath): mixed
     {
         return $this->browser->findElement(WebDriverBy::xpath($xPath))
             ->getDomProperty('innerHTML');
     }
 
+    /**
+     * @param string $xPath
+     * @return void
+     */
     protected function scrollToComponent(string $xPath): void
     {
         $element = $this->browser->findElement(
