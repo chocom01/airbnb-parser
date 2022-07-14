@@ -18,20 +18,16 @@ class Calendar extends WebDriver
 
     /**
      * @param int $listingId
-     * @param int|null $fromMonth
-     * @param int|null $fromYear
-     * @param int|null $countMonths
-     * @return Response
+     * @param int $fromMonth
+     * @param int $fromYear
+     * @param int $countMonths
+     * @return Collection
      * @throws NoSuchElementException
      * @throws TimeoutException
      * @throws UnsupportedOperationException
      */
-    public function getMonths(int $listingId, ?int $fromMonth, ?int $fromYear, ?int $countMonths): Response
+    public function getMonths(int $listingId, int $fromMonth, int $fromYear, int $countMonths): Collection
     {
-        $fromMonth = $fromMonth ?: Carbon::today()->month;
-        $fromYear = $fromYear ?: Carbon::today()->year;
-        $countMonths = $countMonths ?: 1;
-
         $this->browser->get("https://www.airbnb.com/rooms/{$listingId}");
         $this->waitForCalendarDayElement();
 
@@ -40,9 +36,7 @@ class Calendar extends WebDriver
         // $this->browser->takeScreenshot(now()->timestamp . '.png');
 
         $monthsHtml = $this->getMonthsHtml($fromMonth, $fromYear, $countMonths);
-        $parsedMonths = $this->parseCalendar(implode( $monthsHtml));
-
-        return response($parsedMonths);
+        return $this->parseCalendar(implode( $monthsHtml));
     }
 
     /**
