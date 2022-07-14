@@ -17,26 +17,22 @@ trait ParseDaysFromHtml
         $monthsCollection = collect();
 
         foreach ($monthsComponents as $monthComponent) {
-            $monthArray = [];
-
-            $monthArray['month_name'] = $this->getMonthName($monthComponent);;
-            $monthArray['days'] = $this->getDays($monthComponent);
-
-            $monthsCollection->push($monthArray);
+            $monthsCollection->push([
+                'month_name' => $this->getMonthName($monthComponent),
+                'days' => $this->getDays($monthComponent)
+            ]);
         }
 
         return $monthsCollection;
     }
 
     /**
-     * @param string $months
+     * @param string $monthsHtml
      * @return array
      */
     private function getCalendarDayComponents(string $monthsHtml): array
     {
-        preg_match_all('/(?<=<div).*?(?=<\/table>)/',
-            $monthsHtml,
-            $monthsComponents);
+        preg_match_all('/(?<=<div).*?(?=<\/table>)/', $monthsHtml, $monthsComponents);
 
         return $monthsComponents[0];
     }
