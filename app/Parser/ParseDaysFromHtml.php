@@ -61,13 +61,15 @@ trait ParseDaysFromHtml
         foreach ($parsedDays[0] as $day) {
             preg_match('/(?<=calendar-day-)(?<result>[\d\/]+)(?=")/', $day, $parsedDate);
             preg_match('/(?<=aria-disabled=")(?<result>true|false)(?=" aria-label)/', $day, $availability);
-            preg_match('/available for check out/', $day, $availableForCheckin);
+            preg_match('/available for check out/', $day, $availableForCheckOut);
+
             $changedDateFormat = Carbon::createFromFormat('m/d/Y', $parsedDate['result'])->format('Y-m-d');
+            $available = !filter_var($availability['result'], FILTER_VALIDATE_BOOLEAN);
 
             $daysArray[] = [
                 'date' => $changedDateFormat,
-                'available' => !filter_var( $availability['result'], FILTER_VALIDATE_BOOLEAN),
-                'available_for_checkin' => (bool) $availableForCheckin
+                'available' => $available,
+                'available_for_checkin' => $available && !$availableForCheckOut
             ];
         }
 
